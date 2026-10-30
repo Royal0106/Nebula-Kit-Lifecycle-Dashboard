@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nebula Genomics: Kit Lifecycle Dashboard Challenge</title>
+<style>
+  :root { --ink: #1a1d29; --muted: #5b6172; --line: #e3e6ee; --accent: #3b4cca; --bg-soft: #f6f7fb; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif; color: var(--ink); background: #fff; }
+  main { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+  .eyebrow { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px; }
+  h1 { font-size: 32px; line-height: 1.2; margin: 0 0 16px; }
+  h2 { font-size: 20px; margin: 40px 0 12px; padding-top: 24px; border-top: 1px solid var(--line); }
+  h3 { font-size: 16px; margin: 24px 0 8px; }
+  p, li { color: var(--ink); }
+  .lede { font-size: 18px; color: var(--muted); }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 24px; background: var(--bg-soft); border-radius: 10px; padding: 16px 20px; margin: 24px 0; font-size: 15px; }
+  .meta b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 16px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  code { font: 13px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace; background: var(--bg-soft); padding: 2px 5px; border-radius: 4px; }
+  ol.pipeline { counter-reset: s; list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  ol.pipeline li { background: var(--bg-soft); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-family: ui-monospace, Menlo, monospace; }
+  .callout { border-left: 3px solid var(--accent); background: var(--bg-soft); padding: 12px 16px; border-radius: 0 8px 8px 0; margin: 16px 0; }
+  .callout p { margin: 0; }
+</style>
+</head>
+<body>
+<main>
+
+<p class="eyebrow">Nebula Genomics · Engineering Challenge</p>
+<h1>Kit Lifecycle Dashboard</h1>
+<p class="lede">Every Nebula order goes through a physical and lab pipeline. Ops needs to know where kits are, how long each step takes, and which kits need someone to follow up. Build a small web app that answers those questions.</p>
+
+<div class="callout">
+  <p>This is a simplified, made-up version of our fulfillment pipeline, built only for this exercise. The data is synthetic, and nothing you build will be used in production.</p>
+  <p style="margin-top:8px">Please don't spend more than <b>2 hours</b>. We don't expect you to finish everything. Submit what you have and tell us in the README what you'd do next.</p>
+  <p style="margin-top:8px">Use any tech stack you like, and deploy it however you want.</p>
+</div>
+
+<div class="meta">
+  <div><b>Time</b>2 hours max</div>
+  <div><b>Stack &amp; hosting</b>Your choice</div>
+  <div><b>AI tools</b>Allowed for the build</div>
+  <div><b>Deliverable</b>Deployed app + repo + README</div>
+</div>
+
+<h2>The pipeline</h2>
+<p>We ship a kit. The customer collects a saliva sample and mails it back. The lab runs QC and sequencing, and then the customer's report is ready.</p>
+<ol class="pipeline">
+  <li>kit_shipped</li><li>kit_delivered</li><li>sample_mailed</li><li>sample_received</li><li>qc_passed / qc_failed</li><li>sequencing_complete</li><li>report_ready</li>
+</ol>
+<p>Sometimes a kit is replaced, for example after a failed QC or a lost package. A <code>kit_replaced</code> event is logged, and a new kit with a new <code>kit_id</code> starts again from <code>kit_shipped</code>.</p>
+
+<h3>Target turnaround per stage (calendar days)</h3>
+<table>
+  <tr><th>Stage</th><th>Target</th></tr>
+  <tr><td>Order placed → kit shipped</td><td>3</td></tr>
+  <tr><td>Kit shipped → delivered</td><td>7</td></tr>
+  <tr><td>Delivered → sample mailed by customer</td><td>45</td></tr>
+  <tr><td>Sample mailed → received at lab</td><td>14</td></tr>
+  <tr><td>Received → QC result</td><td>7</td></tr>
+  <tr><td>QC passed → sequencing complete</td><td>28</td></tr>
+  <tr><td>Sequencing complete → report ready</td><td>5</td></tr>
+</table>
+
+<h2>Data</h2>
+<p>Two CSV files are attached. They're synthetic exports taken on <b>October 20, 2026</b>.</p>
+
+<h3><code>orders.csv</code></h3>
+<table>
+  <tr><th>Column</th><th>Notes</th></tr>
+  <tr><td><code>order_id</code></td><td></td></tr>
+  <tr><td><code>created_at</code></td><td>ISO 8601 timestamp</td></tr>
+  <tr><td><code>customer_id</code></td><td></td></tr>
+  <tr><td><code>product</code></td><td><code>wgs_30x</code>, <code>wgs_100x</code>, <code>upload_only</code> (the customer uploads existing data, so no kit is shipped)</td></tr>
+  <tr><td><code>country</code></td><td>ISO country code</td></tr>
+  <tr><td><code>status</code></td><td><code>paid</code>, <code>refunded</code>, <code>cancelled</code></td></tr>
+  <tr><td><code>is_test</code></td><td>Internal test order</td></tr>
+</table>
+
+<h3><code>kit_events.csv</code></h3>
+<table>
+  <tr><th>Column</th><th>Notes</th></tr>
+  <tr><td><code>event_id</code></td><td></td></tr>
+  <tr><td><code>order_id</code></td><td></td></tr>
+  <tr><td><code>kit_id</code></td><td>An order can have more than one kit</td></tr>
+  <tr><td><code>event_type</code></td><td>One of the pipeline events above, or <code>kit_replaced</code></td></tr>
+  <tr><td><code>occurred_at</code></td><td>Timestamp</td></tr>
+  <tr><td><code>source</code></td><td><code>carrier</code>, <code>lab</code>, <code>system</code></td></tr>
+</table>
+
+<div class="callout"><p>This is real-world-shaped data, so expect it to be messy. Deciding what counts and how to handle the rough edges is part of the challenge. Make reasonable calls and tell us what you decided.</p></div>
+
+<h2>What to build</h2>
+<p>A web app that someone on the ops team can open and use right away. At minimum, it should let them:</p>
+<ul>
+  <li>See how the pipeline is doing overall: volume, where kits are right now, and how many have finished.</li>
+  <li>Understand how long each stage takes, and how that differs by product.</li>
+  <li>Find kits that are stuck and need follow-up.</li>
+  <li>Drill into a single order and see what happened to it.</li>
+  <li>Narrow things down, for example by date, product or country.</li>
+  <li>Load a different pair of CSVs with the same columns. We'll test your app with our own data.</li>
+</ul>
+<p>Beyond that, build whatever you think would be most useful. Choose where to spend your time.</p>
+
+<h2>What to submit</h2>
+<ol>
+  <li><b>A deployed URL</b> we can open directly, with no login, no local setup and no build step on our end. Any free host is fine.</li>
+  <li><b>A link to the source repo.</b></li>
+  <li><b>A README</b> (see below).</li>
+</ol>
+
+<h3>About the README</h3>
+<div class="callout"><p><b>Write the README yourself, without AI.</b> We want your own words, and short is fine. Cover:</p></div>
+<ul>
+  <li>The decisions and assumptions you made about the data, and why.</li>
+  <li>What you'd do next with more time.</li>
+  <li>How you used AI during the build, including at least one place where it got something wrong.</li>
+</ul>
+
+<p style="margin-top:40px;color:var(--muted)">Questions? Reply to the email that sent you this challenge. If something is unclear, making a reasonable assumption and writing it down is a perfectly good answer.</p>
+
+</main>
+</body>
+</html>
